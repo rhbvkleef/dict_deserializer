@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 typeguard = "*"
+setuptools = "*"
 
 [dev-packages]
 

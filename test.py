@@ -1,8 +1,8 @@
 from time import sleep
 from typing import Optional, List
 
-from serializer_utils.deserializer import Deserializable, Rule
-from serializer_utils.annotations import abstract, discriminate
+from dict_deserializer.deserializer import Deserializable, Rule
+from dict_deserializer.annotations import abstract, discriminate
 
 
 @abstract
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     import sys
     import traceback
 
-    from serializer_utils.deserializer import deserialize
+    from dict_deserializer.deserializer import deserialize
 
     def print_result(function, *args, **kwargs):
         try:
