@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from typeguard import check_type
 
@@ -86,7 +86,7 @@ class Deserializable(metaclass=BaseMeta):
         return fields
 
 
-def deserialize(t, d, try_all=False):
+def get_deserialization_class(t, d, try_all=False):
     for sc in t.__subclasses__():
         if hasattr(sc, '_discriminators'):
             for discriminator in sc._discriminators:
@@ -94,17 +94,42 @@ def deserialize(t, d, try_all=False):
                     break
             else:
                 try:
-                    return deserialize(sc, d)
+                    return get_deserialization_class(sc, t, try_all)
                 except TypeError as e:
                     if not try_all:
                         raise e
+    return t
 
-    if hasattr(t, '_abstract') and t._abstract:
-        raise TypeError('Cannot deserialize into {}: is abstract.'.format(t.__name__))
 
-    instance = t()
-    for k, rule in t.get_attrs().items():
-        v = rule.validate(k, d[k] if k in d else None)
-        setattr(instance, k, v)
+def deserialize(rule: Rule, data, try_all=False, key=None):
+    # In case of primitive types, attempt to assign.
+    try:
+        return rule.validate(key, data)
+    except TypeError:
+        pass
 
-    return instance
+    if type(rule.type) is type(Union):
+        for arg in rule.type.__args__:
+            try:
+                return deserialize(Rule(arg), data, try_all, key)
+            except TypeError:
+                pass
+        raise TypeError('{} did not match any of {}.'.format(type(data), rule.type.__args__))
+
+    if issubclass(rule.type, Deserializable):
+        if not isinstance(data, dict):
+            raise TypeError('Cannot deserialize non-dict into class.')
+
+        cls = get_deserialization_class(rule.type, data, try_all)
+
+        if hasattr(cls, '_abstract') and cls._abstract:
+            raise TypeError('Cannot deserialize into {}: is abstract.'.format(cls.__name__))
+
+        instance = cls()
+        for k, r in cls.get_attrs().items():
+            v = deserialize(r, data[k] if k in data else r.default, try_all, key=k)
+            setattr(instance, k, v)
+
+        return instance
+
+    raise TypeError('Unable to find a deserialization candidate for {} in {}.'.format(data, rule))

@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Optional
 
-from serializer_utils.deserializer import Deserializable
+from serializer_utils.deserializer import Deserializable, Rule
 from serializer_utils.annotations import abstract, discriminate
 
 
@@ -32,16 +32,34 @@ class RefundLine(ReceiptLine):
         return 'RefundLine(super={})'.format(super(RefundLine, self).__repr__())
 
 
+
+class Test(Deserializable):
+    tf: Optional[ReceiptLine]
+
+    def __repr__(self):
+        return 'Test(tf={})'.format(self.tf.__repr__())
+
+
 if __name__ == '__main__':
     import sys
     import traceback
 
     from serializer_utils.deserializer import deserialize
 
-    try:
-        print(deserialize(ReceiptLine, {'type': 'transaction', 'name': 'asdf', 'article_id': 5, 'amount': 5}))
-        print(deserialize(ReceiptLine, {'type': 'refund', 'name': 'asdf', 'pk': 5}))
-        print(deserialize(ReceiptLine, {'type': 'other', 'name': 'asdf'}))
-    except TypeError as err:
-        sleep(0.05)
-        print(traceback.format_exc(), file=sys.stderr)
+    def print_result(function, *args, **kwargs):
+        try:
+            print(function(*args, **kwargs))
+        except:
+            sleep(0.05)
+            print(traceback.format_exc(), file=sys.stderr)
+
+    fns = [
+        [Rule(ReceiptLine), {'type': 'transaction', 'name': 'asdf', 'article_id': 5, 'amount': 5}],
+        [Rule(ReceiptLine), {'type': 'refund', 'name': 'asdf', 'pk': 5}],
+        [Rule(ReceiptLine), {'type': 'other', 'name': 'asdf'}],
+        [Rule(ReceiptLine), {'type': 'transaction'}],
+        [Rule(ReceiptLine), {'type': 'transaction', 'name': 'asdf', 'pk': 'no'}],
+        [Rule(Test), {'tf': {'type': 'refund', 'name': 'asdf', 'pk': 5}}]
+    ]
+
+    [print_result(deserialize, *entry) for entry in fns]
