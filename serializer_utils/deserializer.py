@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from typeguard import check_type
 
@@ -114,7 +114,20 @@ def deserialize(rule: Rule, data, try_all=False, key=None):
                 return deserialize(Rule(arg), data, try_all, key)
             except TypeError:
                 pass
-        raise TypeError('{} did not match any of {}.'.format(type(data), rule.type.__args__))
+        raise TypeError('{} did not match any of {} for key {}.'.format(type(data), rule.type.__args__, key))
+
+    if type(rule.type) is type(List):
+        if len(rule.type.__args__) != 1:
+            raise TypeError(
+                'Cannot handle list with 0 or more than 1 type arguments.')
+        if type(data) != list:
+            raise TypeError(
+                'Cannot deserialize non-list into list.')
+        t = rule.type.__args__[0]
+        result = []
+        for i, v in enumerate(data):
+            result.append(deserialize(Rule(t), v, try_all, i))
+        return result
 
     if issubclass(rule.type, Deserializable):
         if not isinstance(data, dict):

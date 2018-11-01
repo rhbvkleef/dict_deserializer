@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Optional
+from typing import Optional, List
 
 from serializer_utils.deserializer import Deserializable, Rule
 from serializer_utils.annotations import abstract, discriminate
@@ -32,12 +32,13 @@ class RefundLine(ReceiptLine):
         return 'RefundLine(super={})'.format(super(RefundLine, self).__repr__())
 
 
-
 class Test(Deserializable):
     tf: Optional[ReceiptLine]
+    ns: List[int]
 
     def __repr__(self):
-        return 'Test(tf={})'.format(self.tf.__repr__())
+        return 'Test(tf={},ns={})'\
+            .format(self.tf.__repr__(), self.ns.__repr__())
 
 
 if __name__ == '__main__':
@@ -59,7 +60,8 @@ if __name__ == '__main__':
         [Rule(ReceiptLine), {'type': 'other', 'name': 'asdf'}],
         [Rule(ReceiptLine), {'type': 'transaction'}],
         [Rule(ReceiptLine), {'type': 'transaction', 'name': 'asdf', 'pk': 'no'}],
-        [Rule(Test), {'tf': {'type': 'refund', 'name': 'asdf', 'pk': 5}}]
+        [Rule(Test), {'tf': {'type': 'refund', 'name': 'asdf', 'pk': 5},
+                      'ns': [1, 2, 4, 7, 9]}]
     ]
 
     [print_result(deserialize, *entry) for entry in fns]
