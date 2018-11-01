@@ -5,9 +5,12 @@ name = "pypi"
 
 [packages]
 typeguard = "*"
-setuptools = "*"
 
 [dev-packages]
+setuptools = "*"
+wheel = "*"
+twine = "*"
+pipenv = "*"
 
 [requires]
 python_version = "3.6"

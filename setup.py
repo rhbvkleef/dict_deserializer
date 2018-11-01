@@ -1,6 +1,12 @@
 import setuptools
 import dict_deserializer
 
+from pipenv.project import Project
+from pipenv.utils import convert_deps_to_pip
+
+pfile = Project(chdir=False).parsed_pipfile
+requirements = convert_deps_to_pip(pfile['packages'], r=False)
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -14,6 +20,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://git.iapc.utwente.nl/rkleef/serializer_utils",
     packages=setuptools.find_packages(),
+    install_requires=requirements,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
