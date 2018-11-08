@@ -15,7 +15,8 @@ class KeyValueDiscriminator:
 
     def __repr__(self):
         if self.has_value:
-            return 'KeyValueDiscriminator(key={}, value={})'.format(self.key, self.value)
+            return 'KeyValueDiscriminator(key={}, value={})'\
+                .format(self.key, self.value)
         return 'KeyValueDiscriminator(key={})'.format(self.key)
 
     def check(self, d: dict):
