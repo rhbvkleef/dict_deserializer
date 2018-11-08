@@ -86,22 +86,28 @@ class Deserializable(metaclass=BaseMeta):
         return fields
 
 
-def get_deserialization_class(t, d, try_all=False):
+def get_deserialization_classes(t, d, try_all=True) -> List[type]:
+    candidates = []
     for sc in t.__subclasses__():
         if hasattr(sc, '_discriminators'):
             for discriminator in sc._discriminators:
                 if not discriminator.check(d):
+                    # Invalid
                     break
             else:
+                # All were valid
                 try:
-                    return get_deserialization_class(sc, t, try_all)
+                    candidates.extend(get_deserialization_classes(sc, t, try_all))
                 except TypeError as e:
                     if not try_all:
                         raise e
-    return t
+    if not getattr(t, '_abstract', True):
+        candidates.append(t)
+
+    return candidates
 
 
-def deserialize(rule: Rule, data, try_all=False, key=None):
+def deserialize(rule: Rule, data, try_all=True, key='$'):
     # In case of primitive types, attempt to assign.
     try:
         return rule.validate(key, data)
@@ -111,7 +117,10 @@ def deserialize(rule: Rule, data, try_all=False, key=None):
     if type(rule.type) is type(Union):
         for arg in rule.type.__args__:
             try:
-                return deserialize(Rule(arg), data, try_all, key)
+                v = deserialize(Rule(arg), data, try_all, key)
+                if v is None:
+                    v = rule.default
+                return v
             except TypeError:
                 pass
         raise TypeError('{} did not match any of {} for key {}.'.format(type(data), rule.type.__args__, key))
@@ -126,23 +135,27 @@ def deserialize(rule: Rule, data, try_all=False, key=None):
         t = rule.type.__args__[0]
         result = []
         for i, v in enumerate(data):
-            result.append(deserialize(Rule(t), v, try_all, i))
+            result.append(deserialize(Rule(t), v, try_all, '{}.{}'.format(key, i)))
         return result
 
     if issubclass(rule.type, Deserializable):
         if not isinstance(data, dict):
             raise TypeError('Cannot deserialize non-dict into class.')
 
-        cls = get_deserialization_class(rule.type, data, try_all)
+        classes = get_deserialization_classes(rule.type, data, try_all)
 
-        if hasattr(cls, '_abstract') and cls._abstract:
-            raise TypeError('Cannot deserialize into {}: is abstract.'.format(cls.__name__))
+        for cls in classes:
+            try:
+                instance = cls()
+                for k, r in cls.get_attrs().items():
+                    v = deserialize(r, data[k] if k in data else r.default, try_all, key='{}.{}'.format(key, k))
+                    setattr(instance, k, v)
 
-        instance = cls()
-        for k, r in cls.get_attrs().items():
-            v = deserialize(r, data[k] if k in data else r.default, try_all, key=k)
-            setattr(instance, k, v)
+                return instance
+            except TypeError as e:
+                if not try_all:
+                    raise e
 
-        return instance
+        raise TypeError('Unable to find matching non-abstract (sub)type of {} with key {}.'.format(rule.type, key))
 
-    raise TypeError('Unable to find a deserialization candidate for {} in {}.'.format(data, rule))
+    raise TypeError('Unable to find a deserialization candidate for {} with key {}.'.format(rule, key))
