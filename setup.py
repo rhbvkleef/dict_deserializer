@@ -18,7 +18,7 @@ setuptools.setup(
     description=dict_deserializer.description,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://git.iapc.utwente.nl/rkleef/serializer_utils",
+    url="https://github.com/rhbvkleef/dict_deserializer",
     packages=setuptools.find_packages(),
     install_requires=requirements,
     classifiers=[
