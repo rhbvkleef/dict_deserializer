@@ -7,9 +7,6 @@ from dict_deserializer.deserializer import Deserializable, deserialize, Rule
 
 @abstract
 class Object(Deserializable):
-    def __init__(self, name=None):
-        self.name = name
-
     name: str
 
     def __repr__(self):
@@ -20,11 +17,6 @@ class Object(Deserializable):
 
 
 class User(Object):
-    def __init__(self, full_name=None, calling_name=None, *args, **kwargs):
-        super(User, self).__init__(*args, **kwargs)
-        self.full_name = full_name
-        self.calling_name = calling_name
-
     full_name: str
     calling_name: Optional[str] = 'Unknown'
 
@@ -43,10 +35,6 @@ class User(Object):
 
 
 class Group(Object):
-    def __init__(self, members=None, *args, **kwargs):
-        super(Group, self).__init__(*args, **kwargs)
-        self.members = members
-
     members: List[Object]
 
     def __repr__(self):

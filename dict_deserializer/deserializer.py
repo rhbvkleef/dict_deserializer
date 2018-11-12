@@ -1,4 +1,4 @@
-from typing import Optional, Union, List, Tuple, Dict
+from typing import Optional, Union, List, Tuple, Dict, Any
 
 from typeguard import check_type
 
@@ -42,16 +42,20 @@ class Rule:
         return value
 
 
-class BaseMeta(type):
+class DeserializableMeta(type):
     """
     Metaclass for all Deserializable
     """
     def __new__(
-            mcs: 'BaseMeta', name: str, bases: Tuple[type], namespace: dict)\
+            mcs: 'DeserializableMeta', name: str, bases: Tuple[type], namespace: dict)\
             -> type:
+        def auto_ctor(self, **kwargs):
+            for k, v in type(self).get_attrs().items():
+                setattr(self, k, kwargs.get(k))
 
         namespace['_discriminators'] = []
         namespace['_abstract'] = False
+        namespace['__init__'] = auto_ctor
 
         cls = type.__new__(mcs, name, bases, namespace)
 
@@ -67,7 +71,7 @@ class BaseMeta(type):
         return cls
 
 
-def rbase(cls: type, ls: List[type]=None) -> List[type]:
+def _rbase(cls: type, ls: List[type]=None) -> List[type]:
     """
     Get all base classes for cls.
     """
@@ -77,7 +81,7 @@ def rbase(cls: type, ls: List[type]=None) -> List[type]:
     if len(cls.__bases__) > 0:
         for k in cls.__bases__:
             ls.append(k)
-            rbase(k, ls)
+            _rbase(k, ls)
 
     return ls
 
@@ -96,7 +100,7 @@ def _is_valid(key: str, value) -> bool:
            not isinstance(value, property)
 
 
-class Deserializable(metaclass=BaseMeta):
+class Deserializable(metaclass=DeserializableMeta):
     """
     Base class for all automagically deserializing classes.
     """
@@ -109,11 +113,13 @@ class Deserializable(metaclass=BaseMeta):
         """
         fields = {}
         defaults = {}
-        rl = list(reversed(rbase(cls)))
+        rl = list(reversed(_rbase(cls)))
         rl.append(cls)
         for c in rl:
             for k in c.__dict__:
-                if _is_valid(k, c.__dict__[k]):
+                if isinstance(c.__dict__[k], property):
+                    fields[k] = Rule(Any)
+                elif _is_valid(k, c.__dict__[k]):
                     defaults[k] = c.__dict__[k]
                     fields[k] = Rule(Optional[type(defaults[k])],
                                      default=defaults[k])
@@ -137,7 +143,7 @@ def get_deserialization_classes(t, d, try_all=True) -> List[type]:
     :param t: The type to match from.
     :param d: The dict to match onto.
     :param try_all: Whether to support automatic discrimination.
-    :return:
+    :return: an ordered list of candidate classes to deserialize into.
     """
     candidates = []
     for sc in t.__subclasses__():
@@ -215,25 +221,24 @@ def deserialize(rule: Rule, data, try_all: bool=True, key: str='$'):
 
         classes = get_deserialization_classes(rule.type, data, try_all)
 
+        cause = None
+
         for cls in classes:
             try:
-                instance = cls()
-                for k, r in cls.get_attrs().items():
-                    v = deserialize(
-                        r,
-                        data[k] if k in data else r.default,
-                        try_all,
-                        key='{}.{}'.format(key, k)
-                    )
-                    setattr(instance, k, v)
-
-                return instance
+                return cls(**{k: deserialize(
+                    r,
+                    data[k] if k in data else r.default,
+                    try_all,
+                    key='{}.{}'.format(key, k)
+                ) for k, r in cls.get_attrs().items()})
             except TypeError as e:
                 if not try_all:
                     raise e
+                else:
+                    cause = e
 
         raise TypeError('Unable to find matching non-abstract (sub)type of '
-                        '{} with key {}.'.format(rule.type, key))
+                        '{} with key {}. Reason: {}.'.format(rule.type, key, cause))
 
     raise TypeError('Unable to find a deserialization candidate for '
                     '{} with key {}.'.format(rule, key))

@@ -11,6 +11,10 @@ setuptools = "*"
 wheel = "*"
 twine = "*"
 pipenv = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+recommonmark = "*"
+"m2r" = "*"
 
 [requires]
 python_version = "3.6"
