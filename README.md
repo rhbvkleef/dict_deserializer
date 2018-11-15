@@ -4,7 +4,7 @@
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/rhbvkleef/dict_deserializer.svg)](https://github.com/rhbvkleef/dict_deserializer)
 [![PyPI](https://img.shields.io/pypi/v/dictionary-deserializer.svg)](https://pypi.org/project/Dictionary-deserializer/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/dictionary-deserializer.svg)](https://pypi.org/project/Dictionary-deserializer/)
-[![GitHub](https://img.shields.io/github/license/rhbvkleef/dict_deserializer.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html)
+[![GitHub](https://img.shields.io/github/license/rhbvkleef/dict_deserializer.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 Dictionary deserializer is a project built to convert dictionaries into
 composite classes in an intuitive way. Special attention was also paid
