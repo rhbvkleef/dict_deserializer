@@ -9,19 +9,19 @@ deserializer like `json.loads`.
 
 ## Installation
 
-In order to use it, simply add the dependency `dict-deserializer` to your
+In order to use it, simply add the dependency `dictionary-deserializer` to your
 requirements file:
 
 ### Pipenv
 
 ```bash
-pipenv install dict-deserializer
+pipenv install dictionary-deserializer
 ```
 
 ### Pip
 
 ```bash
-pip install dict-deserializer
+pip install dictionary-deserializer
 pip freeze > requirements.txt
 ```
 
