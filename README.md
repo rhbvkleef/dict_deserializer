@@ -1,4 +1,5 @@
 # Dictionary deserializer
+[![ReadTheDocs](https://readthedocs.org/projects/dict-deserializer/badge/?version=latest&style=flat)](https://dict-deserializer.rtfd.io)
 
 Dictionary deserializer is a project built to convert dictionaries into
 composite classes in an intuitive way. Special attention was also paid
