@@ -1,5 +1,6 @@
 # Dictionary deserializer
 [![ReadTheDocs](https://readthedocs.org/projects/dict-deserializer/badge/?version=latest&style=flat)](https://dict-deserializer.rtfd.io)
+[![PyPI](https://img.shields.io/pypi/v/dictionary-deserializer.svg)](https://pypi.org/project/Dictionary-deserializer/)
 
 Dictionary deserializer is a project built to convert dictionaries into
 composite classes in an intuitive way. Special attention was also paid
