@@ -7,6 +7,24 @@ to being friendly to static type-checkers and IDE autocompletes.
 It is expected that this library is used together with a JSON-to-dict
 deserializer like `json.loads`.
 
+## Installation
+
+In order to use it, simply add the dependency `dict-deserializer` to your
+requirements file:
+
+### Pipenv
+
+```bash
+pipenv install dict-deserializer
+```
+
+### Pip
+
+```bash
+pip install dict-deserializer
+pip freeze > requirements.txt
+```
+
 ## Design
 
 This project was originally meant as a proof of concept, to be used to find
