@@ -119,6 +119,7 @@ support some of its types. This is a list of verified composite types:
 
 * `Union` (Including `Optional`)
 * `List`
+* `Tuple`
 * `Any`
 * `dict_deserializer.deserializer.Deserializable`
 * `dict`
@@ -134,8 +135,6 @@ It supports these types as terminal types:
 
 ## Planned features
 
-* Tuples
-    * Lists will probably deserialize into tuples
 * NamedTuples
     * The anonymous namedtuple and the class-namedtuples with (optionally) type annotations.
 * Dataclasses

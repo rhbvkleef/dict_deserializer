@@ -1,5 +1,5 @@
 import unittest
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from dict_deserializer.annotations import abstract
 from dict_deserializer.deserializer import Deserializable, deserialize, Rule
@@ -47,8 +47,19 @@ class Group(Object):
                and other.members == self.members
 
 
+class NestedTypingStuff(Deserializable):
+    test: List[Tuple[int, int, int]]
+
+    def __str__(self):
+        return "NestedTypingStuff(test={})".format(self.test)
+
+    def __eq__(self, other):
+        return isinstance(other, NestedTypingStuff) and self.test == other.test
+
+
 class TestLists(unittest.TestCase):
     def test_CorrectDeserializationForNestedWithTypeUnionsAndLists(self):
+        # noinspection PyArgumentList
         self.assertEqual(
             Group(
                 name='IAPC',
@@ -88,4 +99,36 @@ class TestLists(unittest.TestCase):
         with self.assertRaises(TypeError) as ctx:
             deserialize(Rule(Object), {
                 'name': 'Test'
+            })
+
+    def test_DeserializeTupleCorrect(self):
+        # noinspection PyArgumentList
+        self.assertEqual(
+            NestedTypingStuff(test=[(1, 2, 3)]),
+            deserialize(Rule(NestedTypingStuff), {
+                "test": [
+                    [
+                        1, 2, 3
+                    ]
+                ]
+            })
+        )
+
+    def test_DeserializeTupleFail(self):
+        with self.assertRaises(TypeError) as ctx:
+            deserialize(Rule(NestedTypingStuff), {
+                "test": [
+                    [
+                        1, 2
+                    ]
+                ]
+            })
+
+        with self.assertRaises(TypeError) as ctx:
+            deserialize(Rule(NestedTypingStuff), {
+                "test": [
+                    [
+                        1, 2, "boo"
+                    ]
+                ]
             })
