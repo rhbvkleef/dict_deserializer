@@ -142,6 +142,7 @@ This library uses the `typing` module extensively. It does, however, only
 support some of its types. This is a list of verified composite types:
 
 * `Union` (Including `Optional`)
+* `Dict`
 * `List`
 * `Tuple`
 * `Any`

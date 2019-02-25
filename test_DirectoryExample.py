@@ -1,5 +1,5 @@
 import unittest
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from dict_deserializer.annotations import abstract
 from dict_deserializer.deserializer import Deserializable, deserialize, Rule
@@ -57,6 +57,27 @@ class NestedTypingStuff(Deserializable):
         return isinstance(other, NestedTypingStuff) and self.test == other.test
 
 
+class DictTest(Deserializable):
+    test: Dict[int, List[Object]]
+
+    def __str__(self):
+        return "DictTest(test={})".format(self.test)
+
+    def __eq__(self, other):
+        if not isinstance(other, DictTest):
+            return False
+
+        other: DictTest
+
+        for k, v in other.test.items():
+            if k not in self.test:
+                return False
+
+            if not self.test[k].__eq__(v):
+                return False
+        return True
+
+
 class TestLists(unittest.TestCase):
     def test_CorrectDeserializationForNestedWithTypeUnionsAndLists(self):
         # noinspection PyArgumentList
@@ -96,7 +117,7 @@ class TestLists(unittest.TestCase):
             })
 
     def test_DeserializeIntoAbstract(self):
-        with self.assertRaises(TypeError) as ctx:
+        with self.assertRaises(TypeError):
             deserialize(Rule(Object), {
                 'name': 'Test'
             })
@@ -115,7 +136,7 @@ class TestLists(unittest.TestCase):
         )
 
     def test_DeserializeTupleFail(self):
-        with self.assertRaises(TypeError) as ctx:
+        with self.assertRaises(TypeError):
             deserialize(Rule(NestedTypingStuff), {
                 "test": [
                     [
@@ -124,7 +145,7 @@ class TestLists(unittest.TestCase):
                 ]
             })
 
-        with self.assertRaises(TypeError) as ctx:
+        with self.assertRaises(TypeError):
             deserialize(Rule(NestedTypingStuff), {
                 "test": [
                     [
@@ -132,3 +153,21 @@ class TestLists(unittest.TestCase):
                     ]
                 ]
             })
+
+    def test_DictDeserialize(self):
+        self.assertEqual(
+            DictTest(test={
+                1: [User(
+                    name='Peter',
+                    full_name='Peter Driebergen',
+                    calling_name='Unknown')]
+            }),
+            deserialize(Rule(DictTest), {
+                "test": {
+                    1: [{
+                        'name': 'Peter',
+                        'full_name': 'Peter Driebergen',
+                    }],
+                }
+            })
+        )
