@@ -1,4 +1,4 @@
-from typing import Optional, Union, List, Tuple, Dict, Any
+from typing import Optional, Union, List, Tuple, Dict, Any, get_origin
 
 from typeguard import check_type
 
@@ -216,7 +216,7 @@ def deserialize(rule: Rule, data, try_all: bool = True, key: str = '[root]'):
                         .format(type(data).__name__, rule.type.__args__, key))
 
     # Deserialize dicts
-    if type(rule.type) is type(Dict) and getattr(rule.type, "__origin__", None) == Dict:
+    if get_origin(rule.type) == dict:
         if len(rule.type.__args__) != 2:
             raise TypeError('Cannot handle dicts with 0, 1 or more than two '
                             'type arguments '
@@ -243,7 +243,7 @@ def deserialize(rule: Rule, data, try_all: bool = True, key: str = '[root]'):
             return result
 
     # Deserialize lists
-    if type(rule.type) is type(List) and getattr(rule.type, "__origin__", None) == List:
+    if get_origin(rule.type) == list:
         if len(rule.type.__args__) != 1:
             raise TypeError(
                 'Cannot handle list with 0 or more than 1 type arguments '
@@ -265,7 +265,7 @@ def deserialize(rule: Rule, data, try_all: bool = True, key: str = '[root]'):
         return result
 
     # Deserialize tuples
-    if type(rule.type) is type(Tuple):
+    if get_origin(rule.type) == tuple:
         if not isinstance(data, list):
             raise TypeError(
                 'Expected a list to convert to tuple, but got {}'
@@ -281,6 +281,8 @@ def deserialize(rule: Rule, data, try_all: bool = True, key: str = '[root]'):
                      for k, v in enumerate(zip(rule.type.__args__, data)))
 
     # Deserialize classes
+    if not isinstance(rule.type, type):
+        raise TypeError(repr(rule.type) + " is not a type!")
     if issubclass(rule.type, Deserializable):
         if not isinstance(data, dict):
             raise TypeError(

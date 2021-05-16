@@ -83,8 +83,8 @@ def discriminate(key=None, value=_sentinel, matcher=None):
 
 def abstract(cls):
     """
-    Declares that this class cannot be instanced. Only subclasses that are
-    not declared abstract could be instanced.
+    Declares that this class cannot be instantiated. Only subclasses that are
+    not declared abstract could be instantiated.
 
     This is equivalent to setting the class property ``_abstract=True``.
 
