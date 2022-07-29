@@ -19,7 +19,7 @@ Jinja2==2.11.3
 keyring==23.0.1
 m2r==0.2.1
 MarkupSafe==1.1.1
-mistune==0.8.4
+mistune==2.0.3
 packaging==20.9
 pipenv==2020.11.15
 pkginfo==1.7.0
